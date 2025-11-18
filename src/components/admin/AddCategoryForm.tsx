@@ -18,7 +18,7 @@ function SubmitButton() {
 }
 
 export default function AddCategoryForm() {
-  const [state, formAction] = useFormState(createCategory, { error: null });
+  const [state, formAction] = useFormState(createCategory, { error: "" });
   const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {

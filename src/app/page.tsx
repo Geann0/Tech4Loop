@@ -29,7 +29,9 @@ export default async function HomePage() {
   // Destaques: Apenas produtos Tech4Loop
   const { data: featuredProductsData } = await supabase
     .from("products")
-    .select("*, profiles(whatsapp_number, service_regions)")
+    .select(
+      "*, profiles!products_partner_id_fkey(whatsapp_number, service_regions)"
+    )
     .is("partner_id", null) // Pega Tech4Loop ou parceiro nulo
     .limit(3);
   const featuredProducts: Product[] = featuredProductsData || [];
@@ -37,7 +39,9 @@ export default async function HomePage() {
   // Novidades: Todos os produtos recentes
   const { data: newProductsData } = await supabase
     .from("products")
-    .select("*, profiles(whatsapp_number, service_regions)")
+    .select(
+      "*, profiles!products_partner_id_fkey(whatsapp_number, service_regions)"
+    )
     .order("created_at", { ascending: false })
     .limit(4);
   const newProducts: Product[] = newProductsData || [];
@@ -45,7 +49,9 @@ export default async function HomePage() {
   // Produto em destaque para a seção superior
   const { data: productsForFeatured } = await supabase
     .from("products")
-    .select("*, profiles(whatsapp_number, service_regions)")
+    .select(
+      "*, profiles!products_partner_id_fkey(whatsapp_number, service_regions)"
+    )
     .is("partner_id", null)
     .order("created_at", { ascending: false })
     .limit(4);
@@ -57,18 +63,13 @@ export default async function HomePage() {
       {/* 1. Seção Hero */}
       <section className="bg-background text-white text-center py-20 lg:py-32">
         <div className="container mx-auto px-4">
-          <h1 className="text-4xl md:text-6xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-neon-blue to-electric-purple">
-            Conecte-se na estrada com o Intercomunicador Y10
+          <h1 className="text-3xl md:text-6xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-neon-blue to-electric-purple">
+            O ciclo da tecnologia começa aqui.
           </h1>
           <p className="text-lg md:text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
-            Comunicação segura e estável para suas viagens.
+            Sinta a inovação. Use o futuro.
           </p>
-          <Link
-            href="/produtos"
-            className="bg-neon-blue text-black font-bold py-3 px-10 rounded-lg hover:shadow-glow transition-all text-lg transform hover:scale-105"
-          >
-            Compre agora
-          </Link>
+          
         </div>
       </section>
 

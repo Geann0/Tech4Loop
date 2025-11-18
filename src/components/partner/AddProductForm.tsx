@@ -25,22 +25,30 @@ function SubmitButton() {
 export default function AddProductForm() {
   const [state, formAction] = useFormState(createProduct, { error: "" });
   const [categories, setCategories] = useState<Category[]>([]);
+  const [loadingCategories, setLoadingCategories] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
 
+  const fetchCategories = async () => {
+    setLoadingCategories(true);
+    const supabase = createClientComponentClient();
+    const { data, error } = await supabase
+      .from("categories")
+      .select("name")
+      .order("name");
+
+    console.log("📦 Categorias (parceiro):", data);
+    console.log("❌ Erro (parceiro):", error);
+
+    if (data) {
+      setCategories(data);
+    }
+    if (error) {
+      console.error("Error fetching categories:", error);
+    }
+    setLoadingCategories(false);
+  };
+
   useEffect(() => {
-    const fetchCategories = async () => {
-      const supabase = createClientComponentClient();
-      const { data, error } = await supabase
-        .from("categories")
-        .select("name")
-        .order("name");
-      if (data) {
-        setCategories(data);
-      }
-      if (error) {
-        console.error("Error fetching categories:", error);
-      }
-    };
     fetchCategories();
   }, []);
 
@@ -90,12 +98,22 @@ export default function AddProductForm() {
           />
         </div>
         <div>
-          <label
-            htmlFor="category"
-            className="block text-sm font-medium text-gray-300"
-          >
-            Categoria
-          </label>
+          <div className="flex justify-between items-center mb-1">
+            <label
+              htmlFor="category"
+              className="block text-sm font-medium text-gray-300"
+            >
+              Categoria
+            </label>
+            <button
+              type="button"
+              onClick={fetchCategories}
+              disabled={loadingCategories}
+              className="text-xs text-neon-blue hover:text-electric-purple disabled:opacity-50"
+            >
+              {loadingCategories ? "Carregando..." : "🔄 Recarregar"}
+            </button>
+          </div>
           <select
             id="category"
             name="category"
@@ -109,6 +127,10 @@ export default function AddProductForm() {
               </option>
             ))}
           </select>
+          <p className="mt-1 text-xs text-gray-500">
+            Não encontrou? Entre em contato com o admin para criar nova
+            categoria
+          </p>
         </div>
       </div>
 

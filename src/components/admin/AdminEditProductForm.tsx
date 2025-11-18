@@ -81,6 +81,41 @@ export default function AdminEditProductForm({
         </div>
         <div>
           <label
+            htmlFor="old_price"
+            className="block text-sm font-medium text-gray-300"
+          >
+            Preço Antigo (Opcional)
+          </label>
+          <input
+            type="number"
+            id="old_price"
+            name="old_price"
+            step="0.01"
+            defaultValue={product.old_price || ""}
+            className="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-neon-blue"
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label
+            htmlFor="brand"
+            className="block text-sm font-medium text-gray-300"
+          >
+            🏷️ Marca <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            id="brand"
+            name="brand"
+            defaultValue={product.brand || ""}
+            required
+            className="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-neon-blue"
+          />
+        </div>
+        <div>
+          <label
             htmlFor="category"
             className="block text-sm font-medium text-gray-300"
           >
@@ -99,6 +134,48 @@ export default function AdminEditProductForm({
                 {cat.name}
               </option>
             ))}
+          </select>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label
+            htmlFor="condition"
+            className="block text-sm font-medium text-gray-300"
+          >
+            ⭐ Condição <span className="text-red-500">*</span>
+          </label>
+          <select
+            id="condition"
+            name="condition"
+            defaultValue={product.condition || "new"}
+            required
+            className="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-neon-blue"
+          >
+            <option value="new">Novo</option>
+            <option value="used">Usado</option>
+            <option value="refurbished">Recondicionado</option>
+          </select>
+        </div>
+        <div>
+          <label
+            htmlFor="availability"
+            className="block text-sm font-medium text-gray-300"
+          >
+            📦 Disponibilidade <span className="text-red-500">*</span>
+          </label>
+          <select
+            id="availability"
+            name="availability"
+            defaultValue={product.availability || "in_stock"}
+            required
+            className="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-neon-blue"
+          >
+            <option value="in_stock">Em estoque</option>
+            <option value="low_stock">Estoque baixo</option>
+            <option value="pre_order">Pré-venda</option>
+            <option value="out_of_stock">Fora de estoque</option>
           </select>
         </div>
       </div>

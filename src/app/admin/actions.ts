@@ -5,6 +5,7 @@ import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { validateImageFiles } from "@/lib/imageValidation";
 
 // Cria um cliente Supabase com privilégios de administrador (service_role).
 // Este cliente ignora as políticas de RLS e deve ser usado APENAS no servidor.
@@ -199,12 +200,41 @@ export async function createAdminProduct(
 
   const name = String(formData.get("name"));
   const price = Number(formData.get("price"));
+  const old_price = formData.get("old_price")
+    ? Number(formData.get("old_price"))
+    : null;
   const category_id = String(formData.get("category_id"));
   const short_description = String(formData.get("short_description"));
   const description = String(formData.get("description"));
   const stock = Number(formData.get("stock"));
-  const partner_id = String(formData.get("partner_id"));
+  const partner_id = String(formData.get("partner_id")) || null; // Pode ser vazio
+  const brand = String(formData.get("brand"));
+  const condition = String(formData.get("condition"));
+  const availability = String(formData.get("availability"));
   const images = formData.getAll("images") as File[];
+
+  // Validações dos novos campos
+  if (!brand || brand.trim() === "") {
+    return { error: "Marca é obrigatória." };
+  }
+  if (!condition || !["new", "used", "refurbished"].includes(condition)) {
+    return { error: "Condição inválida." };
+  }
+  if (
+    !availability ||
+    !["in_stock", "low_stock", "pre_order", "out_of_stock"].includes(
+      availability
+    )
+  ) {
+    return { error: "Disponibilidade inválida." };
+  }
+
+  // Filtrar apenas imagens válidas (não vazias)
+  const validImages = images.filter((img) => img && img.size > 0);
+
+  console.log(`📷 Total de imagens recebidas: ${images.length}`);
+  console.log(`✅ Imagens válidas (não vazias): ${validImages.length}`);
+
   let slug = name
     .toLowerCase()
     .replace(/ /g, "-")
@@ -221,46 +251,78 @@ export async function createAdminProduct(
     slug += `-${Date.now()}`; // Adiciona um sufixo para tornar o slug único
   }
 
-  // Validação simples das imagens
-  if (images.length === 0) {
-    return { error: "Pelo menos uma imagem é obrigatória." };
+  // Validação de imagens
+  const imageValidation = validateImageFiles(validImages);
+  if (!imageValidation.valid) {
+    return { error: imageValidation.error || "Imagens inválidas" };
   }
 
-  const { data: partnerProfile } = await supabaseAdmin
-    .from("profiles")
-    .select("partner_name")
-    .eq("id", partner_id)
-    .single();
-  if (!partnerProfile) {
-    return { error: "Parceiro não encontrado." };
+  // Define partner_name baseado no partner_id
+  let partnerName = "Tech4Loop";
+  let uploadPartnerId = "tech4loop-admin"; // Pasta padrão para produtos da loja
+
+  if (partner_id) {
+    const { data: partnerProfile } = await supabaseAdmin
+      .from("profiles")
+      .select("partner_name")
+      .eq("id", partner_id)
+      .single();
+
+    if (!partnerProfile) {
+      return { error: "Parceiro não encontrado." };
+    }
+
+    partnerName = partnerProfile.partner_name;
+    uploadPartnerId = partner_id;
   }
 
   const imageUrls: string[] = [];
-  for (const image of images) {
-    const filePath = `${partner_id}/${Date.now()}-${image.name}`;
+  for (const image of validImages) {
+    // Sanitizar nome do arquivo: remover caracteres especiais e acentos
+    const sanitizedFileName = image.name
+      .normalize("NFD") // Decompõe caracteres acentuados
+      .replace(/[\u0300-\u036f]/g, "") // Remove acentos
+      .replace(/[^a-zA-Z0-9._-]/g, "_") // Substitui caracteres especiais por _
+      .replace(/_{2,}/g, "_") // Remove underscores duplicados
+      .toLowerCase();
+
+    const filePath = `${uploadPartnerId}/${Date.now()}-${sanitizedFileName}`;
+    console.log(`📤 Fazendo upload: ${filePath}, tamanho: ${image.size} bytes`);
+
     const { error: uploadError } = await supabaseAdmin.storage
       .from("product_images")
       .upload(filePath, image);
+
     if (uploadError) {
-      console.error("Upload Error:", uploadError);
-      return { error: "Falha ao fazer upload das imagens." };
+      console.error("❌ Upload Error:", uploadError);
+      return {
+        error: `Falha ao fazer upload: ${uploadError.message || "Erro desconhecido"}. Verifique se o bucket 'product_images' existe e está público.`,
+      };
     }
+
     const { data: urlData } = supabaseAdmin.storage
       .from("product_images")
       .getPublicUrl(filePath);
     imageUrls.push(urlData.publicUrl);
+    console.log(`✅ Upload concluído: ${urlData.publicUrl}`);
   }
+
+  console.log(`🎉 Total de ${imageUrls.length} imagens enviadas com sucesso`);
 
   // Objeto de inserção explícito para garantir que 'category' não seja enviado
   const productData = {
     partner_id: partner_id,
-    partner_name: partnerProfile.partner_name,
+    partner_name: partnerName,
     name,
     price,
+    old_price,
     category_id,
     short_description,
     description,
     stock,
+    brand,
+    condition,
+    availability,
     image_urls: imageUrls,
     slug: slug,
   };
@@ -294,6 +356,12 @@ export async function updateAdminProduct(
   const id = String(formData.get("id"));
   const name = String(formData.get("name"));
   const price = Number(formData.get("price"));
+  const old_price = formData.get("old_price")
+    ? Number(formData.get("old_price"))
+    : null;
+  const brand = String(formData.get("brand") || "");
+  const condition = String(formData.get("condition") || "");
+  const availability = String(formData.get("availability") || "");
   const category_id = String(formData.get("category_id"));
   const short_description = String(formData.get("short_description"));
   const description = String(formData.get("description"));
@@ -304,10 +372,38 @@ export async function updateAdminProduct(
     ? currentImageUrlsString.split(",")
     : [];
 
-  let finalImageUrls = [...currentImageUrls];
+  // Validar campos obrigatórios
+  if (!brand || brand.trim() === "") {
+    return { error: "Marca é obrigatória." };
+  }
+
+  const allowedConditions = ["new", "used", "refurbished"];
+  if (!condition || !allowedConditions.includes(condition)) {
+    return { error: "Condição inválida. Use: novo, usado ou recondicionado." };
+  }
+
+  const allowedAvailability = [
+    "in_stock",
+    "low_stock",
+    "pre_order",
+    "out_of_stock",
+  ];
+  if (!availability || !allowedAvailability.includes(availability)) {
+    return { error: "Disponibilidade inválida." };
+  }
+
+  const finalImageUrls = [...currentImageUrls];
 
   if (newImageFile && newImageFile.size > 0) {
-    const filePath = `${Date.now()}-${newImageFile.name}`;
+    // Sanitizar nome do arquivo
+    const sanitizedFileName = newImageFile.name
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-zA-Z0-9._-]/g, "_")
+      .replace(/_{2,}/g, "_")
+      .toLowerCase();
+
+    const filePath = `${Date.now()}-${sanitizedFileName}`;
     const { error: uploadError } = await supabaseAdmin.storage
       .from("product_images")
       .upload(filePath, newImageFile);
@@ -331,6 +427,10 @@ export async function updateAdminProduct(
   const updateData = {
     name,
     price,
+    old_price,
+    brand,
+    condition,
+    availability,
     category_id,
     short_description,
     description,

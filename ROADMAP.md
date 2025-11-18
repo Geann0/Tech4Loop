@@ -5,6 +5,7 @@ Este documento lista as próximas melhorias e funcionalidades sugeridas para tor
 ## 🎯 Prioridade Alta (Próximas 2 semanas)
 
 ### 1. Sistema de Reviews/Avaliações ⭐
+
 **Status**: Não iniciado
 **Estimativa**: 3-4 dias
 
@@ -20,6 +21,7 @@ Este documento lista as próximas melhorias e funcionalidades sugeridas para tor
 ---
 
 ### 2. Sistema de Cupons/Descontos 🎫
+
 **Status**: Não iniciado
 **Estimativa**: 3-4 dias
 
@@ -35,6 +37,7 @@ Este documento lista as próximas melhorias e funcionalidades sugeridas para tor
 ---
 
 ### 3. Gestão Avançada de Estoque 📦
+
 **Status**: Parcial (campo stock existe)
 **Estimativa**: 2-3 dias
 
@@ -50,6 +53,7 @@ Este documento lista as próximas melhorias e funcionalidades sugeridas para tor
 ---
 
 ### 4. Notificações por Email 📧
+
 **Status**: Parcial (Resend configurado)
 **Estimativa**: 2-3 dias
 
@@ -67,6 +71,7 @@ Este documento lista as próximas melhorias e funcionalidades sugeridas para tor
 ## 🎯 Prioridade Média (Próximo mês)
 
 ### 5. Busca Avançada e Filtros 🔍
+
 **Status**: Básico implementado
 **Estimativa**: 3-4 dias
 
@@ -86,6 +91,7 @@ Este documento lista as próximas melhorias e funcionalidades sugeridas para tor
 ---
 
 ### 6. Dashboard Analytics Completo 📊
+
 **Status**: Não iniciado
 **Estimativa**: 4-5 dias
 
@@ -104,6 +110,7 @@ Este documento lista as próximas melhorias e funcionalidades sugeridas para tor
 ---
 
 ### 7. Sistema de Favoritos/Wishlist ❤️
+
 **Status**: Não iniciado
 **Estimativa**: 2 dias
 
@@ -118,6 +125,7 @@ Este documento lista as próximas melhorias e funcionalidades sugeridas para tor
 ---
 
 ### 8. Comparador de Produtos ⚖️
+
 **Status**: Não iniciado
 **Estimativa**: 3 dias
 
@@ -134,6 +142,7 @@ Este documento lista as próximas melhorias e funcionalidades sugeridas para tor
 ## 🎯 Prioridade Baixa (Futuro)
 
 ### 9. Sistema de Pontos/Fidelidade 🏆
+
 **Status**: Não iniciado
 **Estimativa**: 5-6 dias
 
@@ -149,6 +158,7 @@ Este documento lista as próximas melhorias e funcionalidades sugeridas para tor
 ---
 
 ### 10. Chat ao Vivo 💬
+
 **Status**: Não iniciado
 **Estimativa**: 4-5 dias
 
@@ -163,6 +173,7 @@ Este documento lista as próximas melhorias e funcionalidades sugeridas para tor
 ---
 
 ### 11. Programa de Afiliados 🤝
+
 **Status**: Não iniciado
 **Estimativa**: 7-10 dias
 
@@ -178,6 +189,7 @@ Este documento lista as próximas melhorias e funcionalidades sugeridas para tor
 ---
 
 ### 12. App Mobile (PWA ou React Native) 📱
+
 **Status**: Não iniciado
 **Estimativa**: 15-20 dias
 
@@ -192,6 +204,7 @@ Este documento lista as próximas melhorias e funcionalidades sugeridas para tor
 ---
 
 ### 13. Internacionalização (i18n) 🌍
+
 **Status**: Não iniciado
 **Estimativa**: 4-5 dias
 
@@ -206,6 +219,7 @@ Este documento lista as próximas melhorias e funcionalidades sugeridas para tor
 ---
 
 ### 14. Testes Automatizados 🧪
+
 **Status**: Não iniciado
 **Estimativa**: 7-10 dias
 
@@ -227,6 +241,7 @@ Este documento lista as próximas melhorias e funcionalidades sugeridas para tor
 ---
 
 ### 15. Sistema de Logs e Auditoria 📝
+
 **Status**: Parcial (console.error implementado)
 **Estimativa**: 3-4 dias
 
@@ -247,6 +262,7 @@ Este documento lista as próximas melhorias e funcionalidades sugeridas para tor
 ## 🔧 Melhorias Técnicas
 
 ### Performance
+
 - [ ] Implementar ISR (Incremental Static Regeneration) para produtos
 - [ ] Edge caching com Vercel/CloudFlare
 - [ ] Lazy loading de componentes pesados
@@ -255,6 +271,7 @@ Este documento lista as próximas melhorias e funcionalidades sugeridas para tor
 - [ ] Query optimization
 
 ### Segurança
+
 - [ ] Implementar CSP (Content Security Policy) completo
 - [ ] 2FA (Two-Factor Authentication) para admin
 - [ ] Audit log completo
@@ -262,6 +279,7 @@ Este documento lista as próximas melhorias e funcionalidades sugeridas para tor
 - [ ] Disaster recovery plan
 
 ### DevOps
+
 - [ ] CI/CD completo com GitHub Actions
 - [ ] Staging environment
 - [ ] Automated deployments
@@ -273,6 +291,7 @@ Este documento lista as próximas melhorias e funcionalidades sugeridas para tor
 ## 📊 Métricas de Sucesso
 
 ### Técnicas
+
 - Lighthouse Score: 95+ em todas as categorias
 - Tempo de carregamento: <2s
 - Taxa de erro: <0.1%
@@ -280,6 +299,7 @@ Este documento lista as próximas melhorias e funcionalidades sugeridas para tor
 - Cobertura de testes: >60%
 
 ### Negócio
+
 - Taxa de conversão: >2%
 - Ticket médio: R$ 300+
 - Taxa de abandono de carrinho: <70%
@@ -291,6 +311,7 @@ Este documento lista as próximas melhorias e funcionalidades sugeridas para tor
 ## 🗓️ Timeline Sugerido
 
 ### Mês 1
+
 - ✅ Configuração base, tipos, validações
 - ✅ Carrinho de compras
 - ✅ Segurança e autenticação
@@ -299,18 +320,21 @@ Este documento lista as próximas melhorias e funcionalidades sugeridas para tor
 - [ ] Sistema de Cupons
 
 ### Mês 2
+
 - [ ] Gestão de estoque avançada
 - [ ] Notificações por email
 - [ ] Busca avançada
 - [ ] Dashboard analytics
 
 ### Mês 3
+
 - [ ] Favoritos e comparador
 - [ ] Testes automatizados
 - [ ] Sistema de logs
 - [ ] Otimizações de performance
 
 ### Mês 4+
+
 - [ ] Programa de fidelidade
 - [ ] Chat ao vivo
 - [ ] App mobile (PWA)

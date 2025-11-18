@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { MercadoPagoConfig, Preference } from "mercadopago";
 import { createClient } from "@supabase/supabase-js";
+import {
+  checkRateLimit,
+  getIdentifier,
+  DEFAULT_RATE_LIMIT,
+} from "@/lib/rateLimit";
 
 const client = new MercadoPagoConfig({
   accessToken: process.env.MERCADO_PAGO_ACCESS_TOKEN!,
@@ -11,6 +16,17 @@ const supabaseAdmin = createClient(
 );
 
 export async function POST(req: NextRequest) {
+  // Rate limiting
+  const identifier = getIdentifier(req);
+  const rateLimit = checkRateLimit(identifier, DEFAULT_RATE_LIMIT);
+
+  if (!rateLimit.allowed) {
+    return NextResponse.json(
+      { error: "Muitas requisições. Aguarde antes de tentar novamente." },
+      { status: 429 }
+    );
+  }
+
   try {
     const { productId, orderId, customerInfo } = await req.json();
 

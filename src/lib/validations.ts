@@ -6,13 +6,76 @@ const cepRegex = /^\d{5}-?\d{3}$/;
 // Schema para validação de telefone brasileiro
 const phoneRegex = /^\(?([1-9]{2})\)?[ ]?([9]{1})?[ ]?([0-9]{4})-?([0-9]{4})$/;
 
+// Lista de domínios de email válidos e conhecidos
+const validEmailDomains = [
+  // Principais provedores
+  "gmail.com",
+  "outlook.com",
+  "hotmail.com",
+  "yahoo.com",
+  "icloud.com",
+  "live.com",
+  "msn.com",
+  "aol.com",
+  "protonmail.com",
+  "zoho.com",
+  // Provedores brasileiros
+  "uol.com.br",
+  "bol.com.br",
+  "terra.com.br",
+  "ig.com.br",
+  "globo.com",
+  "r7.com",
+  "oi.com.br",
+  "outlook.com.br",
+  "hotmail.com.br",
+  // Educacionais
+  "edu",
+  "edu.br",
+  "ac.uk",
+  "edu.au",
+  // Corporativos comuns
+  "me.com",
+  "mac.com",
+  "ymail.com",
+  "rocketmail.com",
+  "gmx.com",
+  "mail.com",
+];
+
 // Schema para validação de email
 const emailSchema = z
   .string()
   .min(1, "Email é obrigatório")
   .email("Email inválido")
   .toLowerCase()
-  .trim();
+  .trim()
+  .refine(
+    (email) => {
+      const domain = email.split("@")[1];
+      if (!domain) return false;
+
+      // Verifica se é um domínio da lista ou termina com domínios educacionais
+      return (
+        validEmailDomains.some(
+          (validDomain) =>
+            domain === validDomain || domain.endsWith("." + validDomain)
+        ) ||
+        domain.endsWith(".edu") ||
+        domain.endsWith(".edu.br") ||
+        domain.endsWith(".gov") ||
+        domain.endsWith(".gov.br") ||
+        domain.endsWith(".com") ||
+        domain.endsWith(".com.br") ||
+        domain.endsWith(".org") ||
+        domain.endsWith(".net") ||
+        domain.endsWith(".br")
+      );
+    },
+    {
+      message: "Use um email de provedor válido (Gmail, Outlook, Yahoo, etc.)",
+    }
+  );
 
 // Schemas de Checkout
 export const checkoutFormSchema = z.object({
@@ -152,6 +215,36 @@ export const loginFormSchema = z.object({
 });
 
 export type LoginFormData = z.infer<typeof loginFormSchema>;
+
+// Schema de Registro
+export const registerSchema = z
+  .object({
+    email: emailSchema,
+    password: z
+      .string()
+      .min(8, "Senha deve ter pelo menos 8 caracteres")
+      .max(100, "Senha muito longa")
+      .regex(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*_\-])/,
+        "Senha deve conter letra maiúscula, minúscula, número e caractere especial (!@#$%^&*_-)"
+      ),
+    confirmPassword: z.string(),
+    fullName: z
+      .string()
+      .min(3, "Nome deve ter pelo menos 3 caracteres")
+      .max(100, "Nome muito longo")
+      .trim(),
+    whatsappNumber: z
+      .string()
+      .regex(phoneRegex, "WhatsApp inválido. Use o formato: (11) 99999-9999")
+      .transform((val) => val.replace(/\D/g, "")),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "As senhas não coincidem",
+    path: ["confirmPassword"],
+  });
+
+export type RegisterFormData = z.infer<typeof registerSchema>;
 
 // Schema de Atualização de Perfil
 export const updateProfileSchema = z.object({

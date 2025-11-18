@@ -1,10 +1,33 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
+import {
+  checkRateLimit,
+  getIdentifier,
+  STRICT_RATE_LIMIT,
+} from "@/lib/rateLimit";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const supportEmail = "suporte.tech4loop@gmail.com";
 
 export async function POST(req: NextRequest) {
+  // Rate limiting
+  const identifier = getIdentifier(req);
+  const rateLimit = checkRateLimit(identifier, STRICT_RATE_LIMIT);
+
+  if (!rateLimit.allowed) {
+    return NextResponse.json(
+      { error: "Muitas requisições. Tente novamente em alguns minutos." },
+      {
+        status: 429,
+        headers: {
+          "Retry-After": String(
+            Math.ceil((rateLimit.resetTime - Date.now()) / 1000)
+          ),
+        },
+      }
+    );
+  }
+
   try {
     const body = await req.json();
     const { name, email, phone, message, subject } = body;

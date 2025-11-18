@@ -139,7 +139,7 @@ export default async function ProductsPage() {
 
 // ✅ BOM - Client Component (quando necessário)
 // src/components/CartButton.tsx
-"use client";
+("use client");
 
 import { useState } from "react";
 
@@ -187,10 +187,7 @@ export async function createUser(formData: FormData) {
 // ✅ BOM - Try-catch e mensagens claras
 export async function deleteProduct(id: string) {
   try {
-    const { error } = await supabase
-      .from("products")
-      .delete()
-      .eq("id", id);
+    const { error } = await supabase.from("products").delete().eq("id", id);
 
     if (error) {
       console.error("Erro ao deletar produto:", error);
@@ -359,22 +356,27 @@ git push origin feat/sistema-reviews
 
 ```markdown
 ## Descrição
+
 Breve descrição das mudanças
 
 ## Tipo de Mudança
+
 - [ ] Nova funcionalidade (feat)
 - [ ] Correção de bug (fix)
 - [ ] Breaking change
 - [ ] Documentação
 
 ## Como Testar
+
 1. Passo 1
 2. Passo 2
 
 ## Screenshots (se aplicável)
+
 [Adicionar screenshots]
 
 ## Checklist
+
 - [ ] Código segue os padrões
 - [ ] Testes adicionados/atualizados
 - [ ] Documentação atualizada
@@ -444,6 +446,7 @@ describe("validateCPF", () => {
 ## ❓ Dúvidas?
 
 Abra uma issue ou entre em contato:
+
 - Email: dev@tech4loop.com.br
 - Discord: [Link do servidor]
 

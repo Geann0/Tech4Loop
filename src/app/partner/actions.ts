@@ -4,6 +4,7 @@ import { createServerActionClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { validateImageFiles } from "@/lib/imageValidation";
 
 // Função auxiliar para verificar se o usuário é um parceiro autenticado
 async function getAuthenticatedPartner() {
@@ -60,13 +61,23 @@ export async function createProduct(
     slug = `${slug}-${Math.random().toString(36).substring(2, 8)}`;
   }
 
-  if (images.length === 0 || images[0].size === 0) {
-    return { error: "Pelo menos uma imagem do produto é obrigatória." };
+  // Validação de imagens
+  const imageValidation = validateImageFiles(images);
+  if (!imageValidation.valid) {
+    return { error: imageValidation.error || "Imagens inválidas" };
   }
 
   const imageUrls: string[] = [];
   for (const image of images) {
-    const filePath = `${user.id}/${Date.now()}-${image.name}`;
+    // Sanitizar nome do arquivo: remover caracteres especiais e acentos
+    const sanitizedFileName = image.name
+      .normalize("NFD") // Decompõe caracteres acentuados
+      .replace(/[\u0300-\u036f]/g, "") // Remove acentos
+      .replace(/[^a-zA-Z0-9._-]/g, "_") // Substitui caracteres especiais por _
+      .replace(/_{2,}/g, "_") // Remove underscores duplicados
+      .toLowerCase();
+
+    const filePath = `${user.id}/${Date.now()}-${sanitizedFileName}`;
     const { error: uploadError } = await supabase.storage
       .from("product_images")
       .upload(filePath, image);
@@ -128,10 +139,18 @@ export async function updateProduct(
     ? currentImageUrlsString.split(",")
     : [];
 
-  let finalImageUrls = [...currentImageUrls];
+  const finalImageUrls = [...currentImageUrls];
 
   if (newImageFile && newImageFile.size > 0) {
-    const filePath = `${user.id}/${Date.now()}-${newImageFile.name}`;
+    // Sanitizar nome do arquivo
+    const sanitizedFileName = newImageFile.name
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-zA-Z0-9._-]/g, "_")
+      .replace(/_{2,}/g, "_")
+      .toLowerCase();
+
+    const filePath = `${user.id}/${Date.now()}-${sanitizedFileName}`;
     const { error: uploadError } = await supabase.storage
       .from("product_images")
       .upload(filePath, newImageFile);

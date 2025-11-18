@@ -9,6 +9,8 @@ import type { User } from "@supabase/supabase-js";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const [user, setUser] = useState<User | null>(null);
   const supabase = createClientComponentClient();
   const router = useRouter();
@@ -36,6 +38,15 @@ const Header = () => {
     await supabase.auth.signOut();
     router.push("/");
     router.refresh();
+  };
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/produtos?search=${encodeURIComponent(searchQuery.trim())}`);
+      setIsSearchOpen(false);
+      setSearchQuery("");
+    }
   };
 
   const navLinks = [
@@ -80,7 +91,29 @@ const Header = () => {
               </Link>
             )}
           </nav>
+
           <div className="hidden md:flex items-center gap-4">
+            {/* Botão de Busca */}
+            <button
+              onClick={() => setIsSearchOpen(!isSearchOpen)}
+              className="text-gray-300 hover:text-neon-blue transition-colors p-2 rounded-lg hover:bg-gray-800/50"
+              title="Buscar produtos"
+            >
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+            </button>
+
             {user ? (
               <button
                 onClick={handleLogout}
@@ -90,10 +123,10 @@ const Header = () => {
               </button>
             ) : (
               <Link
-                href="/login" // Link para a página de login/registro
+                href="/login"
                 className="bg-neon-blue text-black font-bold py-2 px-6 rounded-lg hover:shadow-glow transition-shadow"
               >
-                Login / Registrar
+                Login
               </Link>
             )}
           </div>
@@ -122,10 +155,97 @@ const Header = () => {
             </button>
           </div>
         </div>
+
+        {/* Barra de Busca Expansível (Desktop) */}
+        {isSearchOpen && (
+          <div className="hidden md:block py-4 border-t border-gray-800 animate-fadeIn">
+            <form onSubmit={handleSearch} className="max-w-2xl mx-auto">
+              <div className="relative">
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Buscar produtos... (ex: Fone Bluetooth, Mouse Gamer)"
+                  autoFocus
+                  className="w-full px-6 py-3 pl-12 bg-gray-900 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-neon-blue focus:border-transparent"
+                />
+                <svg
+                  className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
+                </svg>
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+              <div className="mt-3 flex gap-2 flex-wrap">
+                <span className="text-xs text-gray-500">Sugestões:</span>
+                {["Fone Bluetooth", "Mouse Gamer", "Teclado Mecânico"].map(
+                  (suggestion) => (
+                    <button
+                      key={suggestion}
+                      type="button"
+                      onClick={() => {
+                        setSearchQuery(suggestion);
+                        router.push(
+                          `/produtos?search=${encodeURIComponent(suggestion)}`
+                        );
+                        setIsSearchOpen(false);
+                      }}
+                      className="text-xs px-3 py-1 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-full text-gray-300 hover:text-white transition-colors"
+                    >
+                      {suggestion}
+                    </button>
+                  )
+                )}
+              </div>
+            </form>
+          </div>
+        )}
       </div>
       {isMenuOpen && (
         <div className="md:hidden bg-background border-t border-gray-800">
           <nav className="px-2 pt-2 pb-3 space-y-1 sm:px-3 flex flex-col items-center">
+            {/* Campo de Busca Mobile */}
+            <form onSubmit={handleSearch} className="w-full px-3 mb-4">
+              <div className="relative">
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Buscar produtos..."
+                  className="w-full px-4 py-2 pl-10 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-neon-blue"
+                />
+                <svg
+                  className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
+                </svg>
+              </div>
+            </form>
+
             {navLinks.map((link) => (
               <Link
                 key={link.href}
@@ -155,7 +275,7 @@ const Header = () => {
                 href="/login"
                 className="bg-neon-blue text-black font-bold py-2 px-6 rounded-lg hover:shadow-glow transition-shadow mt-4"
               >
-                Login / Registrar
+                Login
               </Link>
             )}
           </nav>

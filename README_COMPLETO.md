@@ -9,6 +9,7 @@ Tech4Loop é uma plataforma de e-commerce moderna e robusta, desenvolvida com Ne
 ## ✨ Funcionalidades Principais
 
 ### Para Clientes
+
 - 🛍️ **Navegação de Produtos**: Catálogo completo com filtros e busca
 - 🛒 **Carrinho de Compras**: Sistema de carrinho persistente com localStorage
 - 💳 **Pagamento Integrado**: Integração com Mercado Pago
@@ -17,12 +18,14 @@ Tech4Loop é uma plataforma de e-commerce moderna e robusta, desenvolvida com Ne
 - ⚡ **Performance**: Otimização de imagens, lazy loading, bundle splitting
 
 ### Para Parceiros (Vendedores)
+
 - 📦 **Gestão de Produtos**: Adicionar, editar e remover produtos
 - 📊 **Dashboard**: Visão geral de vendas e pedidos
 - 🗺️ **Regiões de Atendimento**: Definir estados atendidos
 - 📞 **WhatsApp Integration**: Link direto para contato
 
 ### Para Administradores
+
 - 👥 **Gestão de Parceiros**: Criar, editar, banir parceiros
 - 🏷️ **Gestão de Categorias**: Organizar produtos
 - 📦 **Gestão Global de Produtos**: Controle total do catálogo
@@ -32,23 +35,27 @@ Tech4Loop é uma plataforma de e-commerce moderna e robusta, desenvolvida com Ne
 ## 🛠️ Tecnologias Utilizadas
 
 ### Core
+
 - **[Next.js 14](https://nextjs.org/)** - Framework React com App Router
 - **[TypeScript](https://www.typescriptlang.org/)** - Type safety
 - **[Tailwind CSS](https://tailwindcss.com/)** - Styling
 - **[Supabase](https://supabase.com/)** - Backend (Database, Auth, Storage)
 
 ### Validação e Segurança
+
 - **[Zod](https://zod.dev/)** - Schema validation
 - **Rate Limiting** - Proteção contra abuse
 - **RBAC** - Role-Based Access Control
 - **Security Headers** - X-Frame-Options, CSP, etc.
 
 ### Pagamentos e Comunicação
+
 - **[Mercado Pago](https://www.mercadopago.com.br/)** - Gateway de pagamento
 - **[Resend](https://resend.com/)** - Email transacional
 - **WhatsApp Business API** - Suporte ao cliente
 
 ### Dev Tools
+
 - **[ESLint](https://eslint.org/)** - Linting
 - **[Prettier](https://prettier.io/)** - Code formatting
 - **[TypeScript ESLint](https://typescript-eslint.io/)** - TS linting rules
@@ -100,12 +107,14 @@ Tech4Loop/
 ### Instalação
 
 1. **Clone o repositório**
+
 ```bash
 git clone https://github.com/Geann0/Tech4Loop.git
 cd Tech4Loop
 ```
 
 2. **Instale as dependências**
+
 ```bash
 npm install
 # ou

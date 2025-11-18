@@ -22,9 +22,9 @@ function SubmitButton() {
 }
 
 export default function EditCategoryForm({ category }: { category: Category }) {
-  const [state, formAction] = useFormState<{ error: string | null }, FormData>(
+  const [state, formAction] = useFormState<{ error: string }, FormData>(
     updateCategory,
-    { error: null }
+    { error: "" }
   );
 
   return (

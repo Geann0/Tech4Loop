@@ -17,7 +17,7 @@ const Footer = () => {
   return (
     <footer className="bg-gray-900/50 border-t border-gray-800 text-gray-400">
       <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-center md:text-left">
           <div>
             <h3 className="text-lg font-bold text-white mb-4">Navegação</h3>
             <ul className="space-y-2">
@@ -33,24 +33,73 @@ const Footer = () => {
               ))}
             </ul>
           </div>
+
           <div>
-            <h3 className="text-lg font-bold text-white mb-4">Redes Sociais</h3>
+            <h3 className="text-lg font-bold text-white mb-4">Ajuda</h3>
             <ul className="space-y-2">
               <li>
-                <a
-                  href="https://www.instagram.com/tech4loop"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <Link
+                  href="/faq"
                   className="hover:text-neon-blue transition-colors"
                 >
-                  Instagram
-                </a>
+                  FAQ
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/conta"
+                  className="hover:text-neon-blue transition-colors"
+                >
+                  Minha Conta
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/seja-parceiro"
+                  className="hover:text-neon-blue transition-colors"
+                >
+                  Seja Parceiro
+                </Link>
               </li>
             </ul>
           </div>
+
+          <div>
+            <h3 className="text-lg font-bold text-white mb-4">Legal</h3>
+            <ul className="space-y-2">
+              <li>
+                <Link
+                  href="/termos"
+                  className="hover:text-neon-blue transition-colors"
+                >
+                  Termos de Uso
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/privacidade"
+                  className="hover:text-neon-blue transition-colors"
+                >
+                  Política de Privacidade
+                </Link>
+              </li>
+            </ul>
+          </div>
+
           <div>
             <h3 className="text-lg font-bold text-white mb-4">Contato</h3>
-            <p>suporte.tech4loop@gmail.com</p>
+            <p className="mb-2">suporte.tech4loop@gmail.com</p>
+            <div className="mt-4">
+              <h4 className="font-semibold text-white mb-2">Redes Sociais</h4>
+              <a
+                href="https://www.instagram.com/tech4loop"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-neon-blue transition-colors"
+              >
+                Instagram
+              </a>
+            </div>
           </div>
         </div>
 

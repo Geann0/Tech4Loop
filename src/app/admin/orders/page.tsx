@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Order } from "@/types";
+import OrderActions from "@/components/admin/OrderActions";
 
 export const dynamic = "force-dynamic";
 
@@ -60,6 +61,9 @@ export default async function AdminOrdersPage() {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                   Data
                 </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                  Ações
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-700">
@@ -69,9 +73,8 @@ export default async function AdminOrdersPage() {
                     {order.customer_name}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                    {order.order_items.map((item) => (
+                    {(order.order_items || []).map((item) => (
                       <div key={item.id}>
-                        {/* @ts-ignore */}
                         {item.products?.name ?? "Produto não encontrado"} (x
                         {item.quantity})
                       </div>
@@ -86,9 +89,11 @@ export default async function AdminOrdersPage() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
                     <span
                       className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        order.status === "approved"
+                        order.status === "delivered"
                           ? "bg-green-100 text-green-800"
-                          : "bg-yellow-100 text-yellow-800"
+                          : order.status === "cancelled"
+                            ? "bg-red-100 text-red-800"
+                            : "bg-yellow-100 text-yellow-800"
                       }`}
                     >
                       {order.status}
@@ -96,6 +101,12 @@ export default async function AdminOrdersPage() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                     {new Date(order.created_at).toLocaleDateString()}
+                  </td>
+                  <td className="px-6 py-4 text-sm">
+                    <OrderActions
+                      orderId={order.id}
+                      currentStatus={order.status}
+                    />
                   </td>
                 </tr>
               ))}

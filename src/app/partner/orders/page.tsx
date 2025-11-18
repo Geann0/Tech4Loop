@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Order } from "@/types";
+import OrderActions from "@/components/admin/OrderActions";
 
 export const dynamic = "force-dynamic";
 
@@ -16,8 +17,8 @@ export default async function PartnerOrdersPage() {
 
   const { data: orders, error } = await supabase
     .from("orders")
-    .select("*, products!inner(partner_id)")
-    .eq("products.partner_id", user.id)
+    .select("*, order_items!inner(*, products!inner(partner_id))")
+    .eq("order_items.products.partner_id", user.id)
     .order("created_at", { ascending: false });
   if (error) console.error("Error fetching orders:", error);
 
@@ -46,24 +47,57 @@ export default async function PartnerOrdersPage() {
                 Valor
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                Status
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                 Data
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                Ações
               </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-700">
-            {((orders as unknown as Order[]) || []).map((order) => (
+            {((orders as Order[]) || []).map((order) => (
               <tr key={order.id}>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
-                  {order.customer_info.name}
+                  {order.customer_name}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                  {order.product_name}
+                  {(order.order_items || []).map((item) => (
+                    <div key={item.id}>
+                      {item.products?.name ?? "Produto não encontrado"} (x
+                      {item.quantity})
+                    </div>
+                  ))}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                  R$ {order.total_price}
+                  {new Intl.NumberFormat("pt-BR", {
+                    style: "currency",
+                    currency: "BRL",
+                  }).format(order.total_amount)}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm">
+                  <span
+                    className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                      order.status === "delivered"
+                        ? "bg-green-100 text-green-800"
+                        : order.status === "cancelled"
+                          ? "bg-red-100 text-red-800"
+                          : "bg-yellow-100 text-yellow-800"
+                    }`}
+                  >
+                    {order.status}
+                  </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                   {new Date(order.created_at).toLocaleDateString()}
+                </td>
+                <td className="px-6 py-4 text-sm">
+                  <OrderActions
+                    orderId={order.id}
+                    currentStatus={order.status}
+                  />
                 </td>
               </tr>
             ))}

@@ -17,12 +17,20 @@ const protectedRoutes = [
 ];
 
 // Rotas públicas mesmo estando em pastas protegidas
-const publicRoutes = ["/admin/login", "/seja-parceiro"];
+const publicRoutes = [
+  "/admin/login",
+  "/seja-parceiro",
+  "/login", // Login de cliente
+  "/register", // Registro de cliente
+  "/esqueci-senha", // Recuperação de senha
+  "/redefinir-senha", // Reset de senha
+];
 
 export async function middleware(req: NextRequest) {
   const res = NextResponse.next();
   const supabase = createMiddlewareClient({ req, res });
 
+  // CRÍTICO: Aguardar a sessão ser estabelecida
   const {
     data: { session },
   } = await supabase.auth.getSession();
@@ -37,9 +45,22 @@ export async function middleware(req: NextRequest) {
 
   // Se não estiver logado e tentar acessar rota protegida
   if (!session && isProtectedRoute && !isPublicRoute) {
-    const loginUrl = new URL("/admin/login", req.url);
+    // Redirecionar para login correto baseado na rota
+    const loginUrl = path.startsWith("/conta")
+      ? new URL("/login", req.url) // Cliente usa /login
+      : new URL("/admin/login", req.url); // Admin/Partner usa /admin/login
+
     loginUrl.searchParams.set("redirect", path);
-    return NextResponse.redirect(loginUrl);
+
+    // CRÍTICO: Criar redirect a partir de res (preserva cookies)
+    const redirectResponse = NextResponse.redirect(loginUrl);
+
+    // Copiar cookies do res original
+    res.cookies.getAll().forEach((cookie) => {
+      redirectResponse.cookies.set(cookie.name, cookie.value);
+    });
+
+    return redirectResponse;
   }
 
   // Se estiver logado, verificar role e permissões
@@ -52,46 +73,66 @@ export async function middleware(req: NextRequest) {
 
     // Verificar se está banido
     if (profile?.is_banned) {
-      return NextResponse.redirect(new URL("/conta/banido", req.url));
+      const banRedirect = NextResponse.redirect(
+        new URL("/conta/banido", req.url)
+      );
+      res.cookies.getAll().forEach((cookie) => {
+        banRedirect.cookies.set(cookie.name, cookie.value);
+      });
+      return banRedirect;
     }
 
     // Verificar permissões de admin
     if (path.startsWith("/admin") && path !== "/admin/login") {
       if (profile?.role !== "admin") {
-        return NextResponse.redirect(new URL("/", req.url));
+        const homeRedirect = NextResponse.redirect(new URL("/", req.url));
+        res.cookies.getAll().forEach((cookie) => {
+          homeRedirect.cookies.set(cookie.name, cookie.value);
+        });
+        return homeRedirect;
       }
     }
 
     // Verificar permissões de partner
     if (path.startsWith("/partner")) {
       if (profile?.role !== "partner" && profile?.role !== "admin") {
-        return NextResponse.redirect(new URL("/", req.url));
+        const homeRedirect = NextResponse.redirect(new URL("/", req.url));
+        res.cookies.getAll().forEach((cookie) => {
+          homeRedirect.cookies.set(cookie.name, cookie.value);
+        });
+        return homeRedirect;
       }
     }
 
     // Redirecionar da página de login se já estiver autenticado
-    if (path === "/admin/login" && session) {
+    if ((path === "/admin/login" || path === "/login") && session) {
+      let targetUrl = "/conta"; // default
+
       if (profile?.role === "admin") {
-        return NextResponse.redirect(new URL("/admin/dashboard", req.url));
+        targetUrl = "/admin/dashboard";
+      } else if (profile?.role === "partner") {
+        targetUrl = "/partner/dashboard";
       }
-      if (profile?.role === "partner") {
-        return NextResponse.redirect(new URL("/partner/dashboard", req.url));
-      }
-      return NextResponse.redirect(new URL("/conta", req.url));
+
+      const authRedirect = NextResponse.redirect(new URL(targetUrl, req.url));
+      res.cookies.getAll().forEach((cookie) => {
+        authRedirect.cookies.set(cookie.name, cookie.value);
+      });
+      return authRedirect;
     }
   }
 
   // Adicionar headers de segurança
-  const response = res;
-  response.headers.set("X-Frame-Options", "DENY");
-  response.headers.set("X-Content-Type-Options", "nosniff");
-  response.headers.set("Referrer-Policy", "origin-when-cross-origin");
-  response.headers.set(
+  res.headers.set("X-Frame-Options", "DENY");
+  res.headers.set("X-Content-Type-Options", "nosniff");
+  res.headers.set("Referrer-Policy", "origin-when-cross-origin");
+  res.headers.set(
     "Permissions-Policy",
     "camera=(), microphone=(), geolocation=()"
   );
 
-  return response;
+  // CRÍTICO: SEMPRE retornar res (não response) para preservar cookies
+  return res;
 }
 
 export const config = {

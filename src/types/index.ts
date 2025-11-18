@@ -7,13 +7,19 @@ export interface Product {
   slug: string;
   price: number;
   old_price?: number | null;
+  compare_at_price?: number | null;
+  brand?: string | null;
+  condition?: "new" | "used" | "refurbished" | null;
+  availability?: "in_stock" | "low_stock" | "pre_order" | "out_of_stock" | null;
   category_id?: string | null;
   short_description?: string | null;
   description?: string | null;
   image_urls: string[];
+  images?: string[];
   technical_specs?: Record<string, string> | null;
   box_contents?: string[] | null;
   stock?: number;
+  stock_quantity?: number;
   status?: "active" | "inactive";
   is_featured?: boolean;
   created_at: string;
@@ -27,7 +33,7 @@ export interface Product {
 export interface Category {
   id: string;
   name: string;
-  slug: string;
+  slug?: string;
   description?: string | null;
   created_at: string;
   updated_at?: string;

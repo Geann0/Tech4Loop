@@ -2,7 +2,9 @@
 
 import { useFormState, useFormStatus } from "react-dom";
 import { createPartner } from "@/app/admin/actions";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+
+type CoverageType = "country" | "state" | "city";
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -18,8 +20,9 @@ function SubmitButton() {
 }
 
 export default function AddPartnerForm() {
-  const [state, formAction] = useFormState(createPartner, { error: null });
+  const [state, formAction] = useFormState(createPartner, { error: "" });
   const formRef = useRef<HTMLFormElement>(null);
+  const [coverageType, setCoverageType] = useState<CoverageType>("country");
 
   useEffect(() => {
     if (state?.error === null) {
@@ -79,19 +82,105 @@ export default function AddPartnerForm() {
         />
       </div>
       <div>
-        <label
-          htmlFor="service_regions"
-          className="block text-sm font-medium text-gray-300"
-        >
-          Regiões de Atendimento (Opcional)
+        <label className="block text-sm font-medium text-gray-300 mb-3">
+          Tipo de Cobertura Geográfica
         </label>
-        <input
-          type="text"
-          id="service_regions"
-          name="service_regions"
-          placeholder="Ex: RO, AC, AM (separado por vírgula)"
-          className="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-neon-blue"
-        />
+        <div className="space-y-3 mb-4">
+          <label className="flex items-center space-x-3 cursor-pointer">
+            <input
+              type="radio"
+              name="coverage_type"
+              value="country"
+              checked={coverageType === "country"}
+              onChange={(e) => setCoverageType(e.target.value as CoverageType)}
+              className="w-4 h-4 text-neon-blue focus:ring-neon-blue"
+            />
+            <div>
+              <span className="text-white font-medium">
+                🌎 País Inteiro (Brasil)
+              </span>
+              <p className="text-xs text-gray-400">
+                Atende todas as cidades do Brasil
+              </p>
+            </div>
+          </label>
+
+          <label className="flex items-center space-x-3 cursor-pointer">
+            <input
+              type="radio"
+              name="coverage_type"
+              value="state"
+              checked={coverageType === "state"}
+              onChange={(e) => setCoverageType(e.target.value as CoverageType)}
+              className="w-4 h-4 text-neon-blue focus:ring-neon-blue"
+            />
+            <div>
+              <span className="text-white font-medium">
+                🗺️ Estados Específicos
+              </span>
+              <p className="text-xs text-gray-400">
+                Atende estados selecionados
+              </p>
+            </div>
+          </label>
+
+          <label className="flex items-center space-x-3 cursor-pointer">
+            <input
+              type="radio"
+              name="coverage_type"
+              value="city"
+              checked={coverageType === "city"}
+              onChange={(e) => setCoverageType(e.target.value as CoverageType)}
+              className="w-4 h-4 text-neon-blue focus:ring-neon-blue"
+            />
+            <div>
+              <span className="text-white font-medium">
+                🏙️ Cidades Específicas
+              </span>
+              <p className="text-xs text-gray-400">
+                Atende apenas cidades selecionadas
+              </p>
+            </div>
+          </label>
+        </div>
+
+        {coverageType === "state" && (
+          <div className="mt-4">
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Estados (UF)
+            </label>
+            <input
+              type="text"
+              name="service_regions"
+              placeholder="Ex: RO, AC, SP (separado por vírgula)"
+              className="block w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-neon-blue"
+            />
+            <p className="text-xs text-gray-400 mt-1">
+              Digite as siglas dos estados separadas por vírgula
+            </p>
+          </div>
+        )}
+
+        {coverageType === "city" && (
+          <div className="mt-4">
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Cidades
+            </label>
+            <textarea
+              name="service_regions"
+              rows={4}
+              placeholder="Ex: Ouro Preto do Oeste, Ji-Paraná, Ariquemes (uma por linha ou separado por vírgula)"
+              className="block w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-neon-blue"
+            />
+            <p className="text-xs text-gray-400 mt-1">
+              Digite os nomes completos das cidades
+            </p>
+          </div>
+        )}
+
+        {coverageType === "country" && (
+          <input type="hidden" name="service_regions" value="" />
+        )}
       </div>
       <div>
         <label

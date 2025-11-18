@@ -11,7 +11,9 @@ export default async function ParceriasPage() {
 
   const { data: productsData, error } = await supabase
     .from("products")
-    .select("*, profiles(whatsapp_number, service_regions)");
+    .select(
+      "*, profiles!products_partner_id_fkey(whatsapp_number, service_regions)"
+    );
   if (error) console.error("Error fetching products:", error);
   const products: Product[] = productsData || [];
 

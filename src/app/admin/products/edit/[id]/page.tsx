@@ -11,7 +11,9 @@ async function getProduct(id: string): Promise<Product> {
   const supabase = createServerComponentClient({ cookies });
   const { data: product, error } = await supabase
     .from("products")
-    .select("*, profiles(whatsapp_number, service_regions)")
+    .select(
+      "*, profiles!products_partner_id_fkey(whatsapp_number, service_regions)"
+    )
     .eq("id", id)
     .single();
 
