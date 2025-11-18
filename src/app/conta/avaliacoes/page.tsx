@@ -15,10 +15,15 @@ export default async function AvaliacoesPage() {
     data: { session },
   } = await supabase.auth.getSession();
 
-  console.log('🔍 [Avaliacoes] Session:', !!session, '- User:', session?.user?.id);
+  console.log(
+    "🔍 [Avaliacoes] Session:",
+    !!session,
+    "- User:",
+    session?.user?.id
+  );
 
   if (!session) {
-    console.log('❌ [Avaliacoes] No session found, redirecting to /login');
+    console.log("❌ [Avaliacoes] No session found, redirecting to /login");
     redirect("/login");
   }
 

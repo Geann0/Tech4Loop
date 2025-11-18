@@ -5,12 +5,19 @@ import { CartItem, Cart } from "@/types/index";
 
 interface CartContextType {
   cart: Cart;
-  addToCart: (item: Omit<CartItem, "quantity">) => void;
+  addToCart: (item: Omit<CartItem, "quantity" | "selected">) => void;
   removeFromCart: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
+  toggleItemSelection: (productId: string) => void;
+  selectAllItems: () => void;
+  deselectAllItems: () => void;
   clearCart: () => void;
+  removeSelectedItems: () => void;
   getItemQuantity: (productId: string) => number;
   isInCart: (productId: string) => boolean;
+  selectedItems: CartItem[];
+  selectedTotal: number;
+  hasSelectedItems: boolean;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -67,7 +74,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   }, [cart.items, isLoaded]);
 
-  const addToCart = (item: Omit<CartItem, "quantity">) => {
+  const addToCart = (item: Omit<CartItem, "quantity" | "selected">) => {
     setCart((prevCart) => {
       const existingItem = prevCart.items.find(
         (i) => i.product_id === item.product_id
@@ -83,8 +90,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             : i
         );
       } else {
-        // Adiciona novo item com quantidade 1
-        newItems = [...prevCart.items, { ...item, quantity: 1 }];
+        // Adiciona novo item com quantidade 1 e selecionado por padrão
+        newItems = [...prevCart.items, { ...item, quantity: 1, selected: true }];
       }
 
       return {
@@ -143,6 +150,63 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     return cart.items.some((i) => i.product_id === productId);
   };
 
+  const toggleItemSelection = (productId: string) => {
+    setCart((prevCart) => {
+      const newItems = prevCart.items.map((i) =>
+        i.product_id === productId ? { ...i, selected: !i.selected } : i
+      );
+
+      return {
+        items: newItems,
+        total: calculateCartTotal(newItems),
+        itemCount: calculateItemCount(newItems),
+      };
+    });
+  };
+
+  const selectAllItems = () => {
+    setCart((prevCart) => {
+      const newItems = prevCart.items.map((i) => ({ ...i, selected: true }));
+
+      return {
+        items: newItems,
+        total: calculateCartTotal(newItems),
+        itemCount: calculateItemCount(newItems),
+      };
+    });
+  };
+
+  const deselectAllItems = () => {
+    setCart((prevCart) => {
+      const newItems = prevCart.items.map((i) => ({ ...i, selected: false }));
+
+      return {
+        items: newItems,
+        total: calculateCartTotal(newItems),
+        itemCount: calculateItemCount(newItems),
+      };
+    });
+  };
+
+  const removeSelectedItems = () => {
+    setCart((prevCart) => {
+      const newItems = prevCart.items.filter((i) => !i.selected);
+
+      return {
+        items: newItems,
+        total: calculateCartTotal(newItems),
+        itemCount: calculateItemCount(newItems),
+      };
+    });
+  };
+
+  const selectedItems = cart.items.filter((item) => item.selected);
+  const selectedTotal = selectedItems.reduce(
+    (total, item) => total + item.product_price * item.quantity,
+    0
+  );
+  const hasSelectedItems = selectedItems.length > 0;
+
   return (
     <CartContext.Provider
       value={{
@@ -150,9 +214,16 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         addToCart,
         removeFromCart,
         updateQuantity,
+        toggleItemSelection,
+        selectAllItems,
+        deselectAllItems,
         clearCart,
+        removeSelectedItems,
         getItemQuantity,
         isInCart,
+        selectedItems,
+        selectedTotal,
+        hasSelectedItems,
       }}
     >
       {children}

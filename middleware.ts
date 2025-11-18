@@ -37,7 +37,14 @@ export async function middleware(req: NextRequest) {
 
   const path = req.nextUrl.pathname;
 
-  console.log('🔐 [Middleware]', path, '- Session:', !!session, '- User:', session?.user?.id);
+  console.log(
+    "🔐 [Middleware]",
+    path,
+    "- Session:",
+    !!session,
+    "- User:",
+    session?.user?.id
+  );
 
   // Verificar se é uma rota protegida
   const isProtectedRoute = protectedRoutes.some((route) =>
@@ -47,7 +54,7 @@ export async function middleware(req: NextRequest) {
 
   // Se não estiver logado e tentar acessar rota protegida
   if (!session && isProtectedRoute && !isPublicRoute) {
-    console.log('❌ [Middleware] No session, redirecting from', path);
+    console.log("❌ [Middleware] No session, redirecting from", path);
     // Redirecionar para login correto baseado na rota
     const loginUrl = path.startsWith("/conta")
       ? new URL("/login", req.url) // Cliente usa /login

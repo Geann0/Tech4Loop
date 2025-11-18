@@ -22,6 +22,8 @@ export async function GET() {
     userEmail: user?.email,
     sessionError: sessionError?.message,
     userError: userError?.message,
-    cookies: cookies().getAll().map(c => ({ name: c.name, hasValue: !!c.value })),
+    cookies: cookies()
+      .getAll()
+      .map((c) => ({ name: c.name, hasValue: !!c.value })),
   });
 }

@@ -90,6 +90,7 @@ export interface CartItem {
   quantity: number;
   partner_id: string | null;
   partner_name: string | null;
+  selected?: boolean; // Nova propriedade para seleção
 }
 
 export interface Cart {

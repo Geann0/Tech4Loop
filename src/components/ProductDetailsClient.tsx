@@ -23,11 +23,12 @@ export default function ProductDetailsClient({
   product: ProductWithCategoryAndProfile;
 }) {
   const [mainImage, setMainImage] = useState(product.image_urls[0]);
-  const { addToCart } = useCart();
+  const { addToCart, cart } = useCart();
   const router = useRouter();
   const [isAdding, setIsAdding] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showCartPreview, setShowCartPreview] = useState(false);
   const supabase = createClient();
 
   // Verificar autenticação
@@ -75,10 +76,22 @@ export default function ProductDetailsClient({
       return;
     }
 
-    handleAddToCart();
-    setTimeout(() => {
-      router.push("/carrinho");
-    }, 500);
+    // Se já tem itens no carrinho, mostrar preview primeiro
+    if (cart.items.length > 0) {
+      handleAddToCart();
+      setShowCartPreview(true);
+    } else {
+      // Se carrinho vazio, adiciona e vai direto
+      handleAddToCart();
+      setTimeout(() => {
+        router.push("/carrinho");
+      }, 500);
+    }
+  };
+
+  const goToCart = () => {
+    setShowCartPreview(false);
+    router.push("/carrinho");
   };
 
   return (
@@ -255,6 +268,78 @@ export default function ProductDetailsClient({
         onClose={() => setShowLoginModal(false)}
         action="cart"
       />
+
+      {/* Modal de Preview do Carrinho */}
+      {showCartPreview && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+            onClick={() => setShowCartPreview(false)}
+          />
+          <div className="relative bg-gray-900 border border-gray-700 rounded-xl p-6 max-w-md w-full max-h-[80vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-bold">🛒 Seu Carrinho ({cart.itemCount})</h3>
+              <button
+                onClick={() => setShowCartPreview(false)}
+                className="text-gray-400 hover:text-white transition-colors"
+                aria-label="Fechar"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="space-y-3 mb-6">
+              {cart.items.slice(-3).map((item) => (
+                <div key={item.product_id} className="flex gap-3 p-3 bg-gray-800/50 rounded-lg">
+                  <div className="relative w-16 h-16 flex-shrink-0">
+                    <Image
+                      src={item.product_image}
+                      alt={item.product_name}
+                      fill
+                      style={{ objectFit: "contain" }}
+                      className="rounded"
+                    />
+                  </div>
+                  <div className="flex-grow min-w-0">
+                    <p className="font-semibold text-sm truncate">{item.product_name}</p>
+                    <p className="text-xs text-gray-400">{item.quantity}x R$ {item.product_price.toFixed(2)}</p>
+                  </div>
+                </div>
+              ))}
+              {cart.items.length > 3 && (
+                <p className="text-sm text-gray-400 text-center">
+                  + {cart.items.length - 3} outros itens
+                </p>
+              )}
+            </div>
+
+            <div className="border-t border-gray-700 pt-4 mb-4">
+              <div className="flex justify-between text-lg font-bold mb-2">
+                <span>Total:</span>
+                <span className="text-neon-blue">R$ {cart.total.toFixed(2)}</span>
+              </div>
+              <p className="text-xs text-gray-400">
+                💡 No carrinho você pode selecionar quais produtos comprar
+              </p>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowCartPreview(false)}
+                className="flex-1 px-4 py-3 border border-gray-600 text-gray-300 rounded-lg hover:bg-gray-800 transition-all"
+              >
+                Continuar Comprando
+              </button>
+              <button
+                onClick={goToCart}
+                className="flex-1 px-4 py-3 bg-gradient-to-r from-neon-blue to-electric-purple text-white font-bold rounded-lg hover:shadow-glow transition-all"
+              >
+                Ver Carrinho →
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
