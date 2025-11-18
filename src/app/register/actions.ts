@@ -18,6 +18,17 @@ export async function registerUser(formData: FormData) {
       whatsappNumber: String(formData.get("whatsappNumber")),
     };
 
+    // 🔒 LGPD: Extrair consentimento
+    const lgpdConsent = formData.get("lgpdConsent") === "true";
+    const lgpdConsentDate = String(formData.get("lgpdConsentDate"));
+
+    if (!lgpdConsent) {
+      return {
+        error:
+          "Você precisa aceitar os Termos de Uso e Política de Privacidade.",
+      };
+    }
+
     // Validar com Zod
     const validatedData = registerSchema.parse(data);
 
@@ -49,18 +60,26 @@ export async function registerUser(formData: FormData) {
       return { error: "Erro ao criar usuário. Tente novamente." };
     }
 
-    // Atualizar perfil (se já não foi criado pelo trigger)
+    // 🔒 LGPD: Atualizar perfil COM consentimento
     const { error: profileError } = await supabase
       .from("profiles")
       .update({
         partner_name: validatedData.fullName,
         whatsapp_number: validatedData.whatsappNumber,
         role: "customer",
+        lgpd_consent: lgpdConsent,
+        lgpd_consent_date: lgpdConsentDate,
       })
       .eq("id", authData.user.id);
 
     if (profileError) {
-      console.error("Erro ao atualizar perfil:", profileError);
+      console.error("❌ ERRO CRÍTICO: Falha ao salvar consentimento LGPD!");
+      console.error(profileError);
+      // Não falhar cadastro, mas logar erro crítico
+    } else {
+      console.log(
+        `✅ Consentimento LGPD salvo para usuário ${authData.user.id}`
+      );
     }
 
     return { success: true };
