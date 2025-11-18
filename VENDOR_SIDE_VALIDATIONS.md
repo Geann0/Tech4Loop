@@ -7,8 +7,9 @@
 #### Cenário de Risco Real:
 
 **Pedido #123 com 3 itens:**
+
 - Item 1: Fone Bluetooth (Parceiro A) - R$ 100,00 - ✅ COMPRADO
-- Item 2: Mouse Gamer (Parceiro B) - R$ 150,00 - ✅ COMPRADO  
+- Item 2: Mouse Gamer (Parceiro B) - R$ 150,00 - ✅ COMPRADO
 - Item 3: Teclado Mecânico (Parceiro A) - R$ 200,00 - ❌ NÃO COMPRADO (não selecionado)
 
 **Total Real do Pedido:** R$ 250,00 (itens 1 + 2)
@@ -18,9 +19,10 @@
 ### Problema 1: Admin Via Informações Incorretas
 
 **❌ ANTES (ERRADO):**
+
 ```
 Cliente: João Silva
-Produtos: 
+Produtos:
   - Fone Bluetooth (x1)
   - Mouse Gamer (x1)
   - Teclado Mecânico (x1)    ← NÃO FOI COMPRADO!
@@ -28,6 +30,7 @@ Valor Total: R$ 250,00        ← PARECE ERRADO (3 produtos por R$ 250?)
 ```
 
 **Confusão do Admin:**
+
 - "Cliente comprou 3 produtos por R$ 250,00? Algo está errado!"
 - Impossível saber quais produtos foram realmente pagos
 - Risco de enviar produtos não pagos
@@ -37,6 +40,7 @@ Valor Total: R$ 250,00        ← PARECE ERRADO (3 produtos por R$ 250?)
 ### Problema 2: Parceiro A Via Informações Incorretas
 
 **❌ ANTES (ERRADO):**
+
 ```
 Cliente: João Silva
 Produtos:
@@ -46,6 +50,7 @@ Valor: R$ 250,00              ← TOTAL DO PEDIDO INTEIRO!
 ```
 
 **Confusão do Parceiro A:**
+
 - "Vendi Fone (R$ 100) + Teclado (R$ 200) = R$ 300, mas mostra R$ 250?"
 - "Devo enviar o Teclado ou não?"
 - "Vou receber R$ 250 ou R$ 100?"
@@ -55,6 +60,7 @@ Valor: R$ 250,00              ← TOTAL DO PEDIDO INTEIRO!
 ### Problema 3: Parceiro B Via Informações Incorretas
 
 **❌ ANTES (ERRADO):**
+
 ```
 Cliente: João Silva
 Produto: Mouse Gamer (x1)
@@ -62,6 +68,7 @@ Valor: R$ 250,00              ← TOTAL DO PEDIDO INTEIRO!
 ```
 
 **Confusão do Parceiro B:**
+
 - "Vendi Mouse de R$ 150, mas mostra R$ 250?"
 - "Vou receber R$ 250 ou R$ 150?"
 - "Tem outros produtos nesse pedido que não são meus?"
@@ -73,6 +80,7 @@ Valor: R$ 250,00              ← TOTAL DO PEDIDO INTEIRO!
 ### 1. Admin Orders Page
 
 #### 1.1 Cálculo de Total Correto
+
 ```typescript
 // ❌ ANTES (usava valor do BD sem validar)
 <td>{order.total_amount}</td>
@@ -85,6 +93,7 @@ const orderTotal = (order.order_items || []).reduce(
 ```
 
 #### 1.2 Detecção de Inconsistências
+
 ```typescript
 // Mostra alerta se valor do BD diverge dos itens
 {Math.abs(orderTotal - order.total_amount) > 0.01 && (
@@ -95,6 +104,7 @@ const orderTotal = (order.order_items || []).reduce(
 ```
 
 **Benefícios:**
+
 - ✅ Admin vê o valor EXATO baseado nos itens
 - ✅ Detecta pedidos com inconsistências no banco
 - ✅ Pode auditar e corrigir problemas
@@ -104,6 +114,7 @@ const orderTotal = (order.order_items || []).reduce(
 ### 2. Partner Orders Page
 
 #### 2.1 Filtragem de Produtos do Parceiro
+
 ```typescript
 // Filtra apenas produtos deste parceiro
 const partnerItems = (order.order_items || []).filter(
@@ -112,26 +123,29 @@ const partnerItems = (order.order_items || []).filter(
 ```
 
 #### 2.2 Cálculo de Subtotal do Parceiro
+
 ```typescript
 // Calcula apenas o que o parceiro vai receber
 const partnerSubtotal = partnerItems.reduce(
-  (sum, item) => sum + (item.price_at_purchase * item.quantity),
+  (sum, item) => sum + item.price_at_purchase * item.quantity,
   0
 );
 ```
 
 #### 2.3 Indicação de Outros Produtos
+
 ```typescript
 // Mostra se há produtos de outros parceiros
 {(order.order_items?.length || 0) > partnerItems.length && (
   <div className="text-xs text-gray-500 mt-1">
-    + {(order.order_items?.length || 0) - partnerItems.length} 
+    + {(order.order_items?.length || 0) - partnerItems.length}
     produto(s) de outro(s) parceiro(s)
   </div>
 )}
 ```
 
 #### 2.4 Exibição Clara de Valores
+
 ```typescript
 // Mostra subtotal do parceiro em destaque
 <div className="font-bold text-neon-blue">
@@ -163,6 +177,7 @@ Status: Pending
 ```
 
 Se houvesse inconsistência no banco:
+
 ```
 Valor Total: R$ 250,00
 ⚠️ Divergência: BD = R$ 450,00   ← ALERTA!
@@ -184,6 +199,7 @@ Status: Pending
 ```
 
 **Clareza Total:**
+
 - ✅ Sabe que vai receber R$ 100,00 (não R$ 250)
 - ✅ Sabe que tem 1 produto de outro parceiro
 - ✅ Sabe que deve enviar apenas o Fone
@@ -204,6 +220,7 @@ Status: Pending
 ```
 
 **Clareza Total:**
+
 - ✅ Sabe que vai receber R$ 150,00 (não R$ 250)
 - ✅ Sabe que tem 1 produto de outro parceiro
 - ✅ Sabe que deve enviar apenas o Mouse
@@ -213,64 +230,76 @@ Status: Pending
 ## 🔍 Validações Implementadas
 
 ### Camada 1: Cálculo Dinâmico (Admin)
+
 ```typescript
 const orderTotal = order_items.reduce(
-  (sum, item) => sum + (item.price_at_purchase * item.quantity), 
+  (sum, item) => sum + item.price_at_purchase * item.quantity,
   0
 );
 ```
+
 **Objetivo:** Calcular total baseado nos itens REAIS do pedido
 
 ---
 
 ### Camada 2: Detecção de Inconsistências (Admin)
+
 ```typescript
 if (Math.abs(orderTotal - order.total_amount) > 0.01) {
   // Mostrar alerta
 }
 ```
+
 **Objetivo:** Detectar pedidos com divergências no banco de dados
 
 ---
 
 ### Camada 3: Filtragem por Parceiro (Partner)
+
 ```typescript
 const partnerItems = order_items.filter(
   (item) => item.products?.partner_id === user.id
 );
 ```
+
 **Objetivo:** Mostrar apenas produtos que pertencem ao parceiro
 
 ---
 
 ### Camada 4: Subtotal do Parceiro (Partner)
+
 ```typescript
 const partnerSubtotal = partnerItems.reduce(
-  (sum, item) => sum + (item.price_at_purchase * item.quantity),
+  (sum, item) => sum + item.price_at_purchase * item.quantity,
   0
 );
 ```
+
 **Objetivo:** Calcular quanto o parceiro receberá
 
 ---
 
 ### Camada 5: Indicação de Multi-Parceiro (Partner)
+
 ```typescript
 const otherPartnersCount = order_items.length - partnerItems.length;
 if (otherPartnersCount > 0) {
   // Mostrar quantidade de produtos de outros parceiros
 }
 ```
+
 **Objetivo:** Informar que o pedido tem produtos de outros vendedores
 
 ---
 
 ### Camada 6: Comparação de Totais (Partner)
+
 ```typescript
 if (Math.abs(partnerSubtotal - totalOrderValue) > 0.01) {
   // Mostrar total do pedido completo para contexto
 }
 ```
+
 **Objetivo:** Dar contexto sobre o valor total do pedido
 
 ---
@@ -315,18 +344,22 @@ PARCEIRO B VÊ:
 ## ⚠️ Cenários de Alerta
 
 ### Cenário 1: Inconsistência no Banco (Admin)
+
 **Sintoma:**
+
 ```
 Valor Total: R$ 250,00
 ⚠️ Divergência: BD = R$ 450,00
 ```
 
 **Causa Possível:**
+
 - Pedido antigo antes das validações
 - Erro manual no banco de dados
 - Item removido mas total não atualizado
 
 **Ação do Admin:**
+
 - Verificar `order_items` no banco
 - Recalcular e atualizar `total_amount` se necessário
 - Investigar causa da divergência
@@ -334,21 +367,26 @@ Valor Total: R$ 250,00
 ---
 
 ### Cenário 2: Parceiro Sem Produtos (Partner)
+
 **Sintoma:** Parceiro vê pedido vazio ou sem seus produtos
 
 **Causa Possível:**
+
 - Filtro `partner_id` incorreto
 - Produto sem `partner_id` definido
 - Permissões RLS bloqueando acesso
 
 **Ação:**
+
 - Verificar `products.partner_id` no banco
 - Verificar políticas RLS da tabela `order_items`
 
 ---
 
 ### Cenário 3: Pedido Multi-Parceiro (Partner)
+
 **Sintoma:**
+
 ```
 Meu Subtotal: R$ 100,00
 Pedido Total: R$ 250,00
@@ -356,6 +394,7 @@ Pedido Total: R$ 250,00
 ```
 
 **Interpretação CORRETA:**
+
 - Parceiro receberá R$ 100,00
 - Cliente pagou R$ 250,00 no total
 - Há outro parceiro que receberá R$ 150,00
@@ -366,12 +405,14 @@ Pedido Total: R$ 250,00
 ## 🎯 Garantias de Segurança
 
 ### Para Admins:
+
 ✅ Veem valor real baseado nos itens do pedido
 ✅ Detectam inconsistências no banco de dados
 ✅ Podem auditar todos os pedidos
 ✅ Sabem exatamente quais produtos foram comprados
 
 ### Para Parceiros:
+
 ✅ Veem apenas SEUS produtos
 ✅ Sabem EXATAMENTE quanto vão receber
 ✅ Sabem se há produtos de outros parceiros no pedido
@@ -379,6 +420,7 @@ Pedido Total: R$ 250,00
 ✅ Sabem quais produtos devem enviar
 
 ### Para o Sistema:
+
 ✅ Transparência total no fluxo de pedidos
 ✅ Rastreabilidade de valores
 ✅ Detecção automática de problemas
@@ -391,19 +433,19 @@ Pedido Total: R$ 250,00
 
 ### ANTES (Problemático):
 
-| Usuário | Via | Problema |
-|---------|-----|----------|
-| Admin | 3 produtos, R$ 250 | ❌ Impossível saber se valor está correto |
-| Parceiro A | 2 produtos, R$ 250 | ❌ Achava que receberia R$ 250 pelos 2 |
-| Parceiro B | 1 produto, R$ 250 | ❌ Achava que receberia R$ 250 por 1 |
+| Usuário    | Via                | Problema                                  |
+| ---------- | ------------------ | ----------------------------------------- |
+| Admin      | 3 produtos, R$ 250 | ❌ Impossível saber se valor está correto |
+| Parceiro A | 2 produtos, R$ 250 | ❌ Achava que receberia R$ 250 pelos 2    |
+| Parceiro B | 1 produto, R$ 250  | ❌ Achava que receberia R$ 250 por 1      |
 
 ### DEPOIS (Correto):
 
-| Usuário | Via | Benefício |
-|---------|-----|-----------|
-| Admin | 2 produtos, R$ 250 calculado | ✅ Total validado, alerta se inconsistência |
-| Parceiro A | 1 produto (seu), R$ 100 + nota de total R$ 250 | ✅ Sabe que receberá R$ 100 |
-| Parceiro B | 1 produto (seu), R$ 150 + nota de total R$ 250 | ✅ Sabe que receberá R$ 150 |
+| Usuário    | Via                                            | Benefício                                   |
+| ---------- | ---------------------------------------------- | ------------------------------------------- |
+| Admin      | 2 produtos, R$ 250 calculado                   | ✅ Total validado, alerta se inconsistência |
+| Parceiro A | 1 produto (seu), R$ 100 + nota de total R$ 250 | ✅ Sabe que receberá R$ 100                 |
+| Parceiro B | 1 produto (seu), R$ 150 + nota de total R$ 250 | ✅ Sabe que receberá R$ 150                 |
 
 ---
 
@@ -414,23 +456,23 @@ Sugestões para melhorar ainda mais o rastreamento:
 ```typescript
 // Log quando admin visualiza pedido com divergência
 if (orderTotal !== order.total_amount) {
-  await supabase.from('audit_logs').insert({
-    action: 'view_order_with_discrepancy',
+  await supabase.from("audit_logs").insert({
+    action: "view_order_with_discrepancy",
     user_id: admin.id,
     order_id: order.id,
     expected: orderTotal,
     found: order.total_amount,
-    timestamp: new Date()
+    timestamp: new Date(),
   });
 }
 
 // Log quando parceiro visualiza pedido
-await supabase.from('audit_logs').insert({
-  action: 'partner_view_order',
+await supabase.from("audit_logs").insert({
+  action: "partner_view_order",
   user_id: partner.id,
   order_id: order.id,
   partner_subtotal: partnerSubtotal,
-  timestamp: new Date()
+  timestamp: new Date(),
 });
 ```
 

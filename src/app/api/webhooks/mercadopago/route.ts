@@ -171,19 +171,70 @@ export async function POST(request: NextRequest) {
               }
             }
 
-            // Enviar email para o parceiro do primeiro item (ou admin)
-            const firstProduct = orderDetails.order_items[0]?.products;
-            const partnerEmail = firstProduct?.profiles?.email;
-            const adminEmail = process.env.ADMIN_EMAIL;
-            const recipientEmail = partnerEmail || adminEmail;
+            // ✅ ENVIAR EMAIL PARA TODOS OS PARCEIROS ENVOLVIDOS
+            console.log(`📧 Enviando emails para parceiros...`);
+            
+            // Agrupar itens por parceiro
+            const partnerGroups = new Map();
+            
+            for (const item of orderDetails.order_items) {
+              const partnerId = item.products?.partner_id;
+              const partnerEmail = item.products?.profiles?.email;
+              const partnerName = item.products?.profiles?.partner_name || "Parceiro";
+              
+              if (partnerId && partnerEmail) {
+                if (!partnerGroups.has(partnerId)) {
+                  partnerGroups.set(partnerId, {
+                    email: partnerEmail,
+                    name: partnerName,
+                    items: [],
+                  });
+                }
+                partnerGroups.get(partnerId).items.push(item);
+              }
+            }
 
-            if (recipientEmail && firstProduct) {
-              await resend.emails.send({
-                from: "Vendas <vendas@tech4loop.com.br>",
-                to: [recipientEmail],
-                subject: `Novo Pedido Recebido: ${firstProduct.name}`,
-                react: NewOrderEmail({ order: orderDetails }),
-              });
+            // Enviar email para cada parceiro com SEUS produtos
+            for (const partnerId of Array.from(partnerGroups.keys())) {
+              const partnerData = partnerGroups.get(partnerId)!;
+              const partnerSubtotal = partnerData.items.reduce(
+                (sum: number, item: any) => sum + (item.price_at_purchase * item.quantity),
+                0
+              );
+
+              console.log(`  → Enviando para ${partnerData.name} (${partnerData.items.length} produto(s), R$ ${partnerSubtotal.toFixed(2)})`);
+              
+              try {
+                await resend.emails.send({
+                  from: "Vendas <vendas@tech4loop.com.br>",
+                  to: [partnerData.email],
+                  subject: `Novo Pedido Recebido: ${partnerData.items.length} produto(s) - R$ ${partnerSubtotal.toFixed(2)}`,
+                  react: NewOrderEmail({ 
+                    order: {
+                      ...orderDetails,
+                      order_items: partnerData.items,
+                      partner_subtotal: partnerSubtotal,
+                    } 
+                  }),
+                });
+                console.log(`  ✅ Email enviado para ${partnerData.name}`);
+              } catch (emailError) {
+                console.error(`  ❌ Erro ao enviar email para ${partnerData.name}:`, emailError);
+              }
+            }
+
+            // Se nenhum parceiro encontrado, enviar para admin
+            if (partnerGroups.size === 0) {
+              const adminEmail = process.env.ADMIN_EMAIL;
+              if (adminEmail) {
+                console.log(`  → Enviando para admin (nenhum parceiro encontrado)`);
+                await resend.emails.send({
+                  from: "Vendas <vendas@tech4loop.com.br>",
+                  to: [adminEmail],
+                  subject: `Novo Pedido Recebido: ${orderDetails.order_items.length} produto(s)`,
+                  react: NewOrderEmail({ order: orderDetails }),
+                });
+              }
             }
 
             // 🧾 EMITIR NF-e (OBRIGATÓRIO NO BRASIL)
@@ -191,15 +242,30 @@ export async function POST(request: NextRequest) {
               `📝 Iniciando emissão de NF-e para pedido ${orderId}...`
             );
 
+            // 🔒 CALCULAR TOTAL baseado nos itens REAIS (price_at_purchase)
+            const nfeTotal = orderDetails.order_items.reduce(
+              (sum: number, item: any) => sum + (item.price_at_purchase * item.quantity),
+              0
+            );
+
+            // ⚠️ VALIDAR se total calculado bate com total do banco
+            if (Math.abs(nfeTotal - parseFloat(orderDetails.total_amount)) > 0.01) {
+              console.error("⚠️ DIVERGÊNCIA NO TOTAL DA NF-e!");
+              console.error("Total calculado:", nfeTotal);
+              console.error("Total no BD:", orderDetails.total_amount);
+              // Usar total calculado (mais confiável)
+            }
+
             const nfeResult = await emitNFe({
               naturezaOperacao: "Venda de mercadoria",
               produtos: orderDetails.order_items.map((item: any) => ({
-                codigo: item.products.id,
+                codigo: item.product_id,
                 descricao: item.products.name,
-                ncm: item.products.ncm || "62044200", // NCM padrão para vestuário
+                ncm: item.products.ncm || "62044200",
                 quantidade: item.quantity,
-                valorUnitario: parseFloat(item.products.price),
-                valorTotal: parseFloat(item.products.price) * item.quantity,
+                // ✅ USAR PRICE_AT_PURCHASE (preço pago pelo cliente)
+                valorUnitario: item.price_at_purchase,
+                valorTotal: item.price_at_purchase * item.quantity,
               })),
               cliente: {
                 nome: orderDetails.customer_name,
@@ -216,7 +282,8 @@ export async function POST(request: NextRequest) {
                   cep: orderDetails.customer_cep,
                 },
               },
-              valorTotal: parseFloat(orderDetails.total_amount),
+              // ✅ USAR TOTAL CALCULADO (mais confiável)
+              valorTotal: nfeTotal,
               formaPagamento:
                 orderDetails.payment_method === "credit_card"
                   ? "Cartão de Crédito"

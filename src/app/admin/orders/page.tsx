@@ -70,59 +70,60 @@ export default async function AdminOrdersPage() {
               {((orders as Order[]) || []).map((order) => {
                 // 🔒 CALCULAR TOTAL REAL baseado nos order_items
                 const orderTotal = (order.order_items || []).reduce(
-                  (sum, item) => sum + (item.price_at_purchase * item.quantity),
+                  (sum, item) => sum + item.price_at_purchase * item.quantity,
                   0
                 );
-                
+
                 return (
-                <tr key={order.id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
-                    {order.customer_name}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                    {(order.order_items || []).map((item) => (
-                      <div key={item.id}>
-                        {item.products?.name ?? "Produto não encontrado"} (x
-                        {item.quantity})
-                      </div>
-                    ))}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                    {new Intl.NumberFormat("pt-BR", {
-                      style: "currency",
-                      currency: "BRL",
-                    }).format(orderTotal)}
-                    {/* Verificar inconsistência */}
-                    {Math.abs(orderTotal - order.total_amount) > 0.01 && (
-                      <div className="text-xs text-red-400 mt-1">
-                        ⚠️ Divergência: BD = R$ {order.total_amount.toFixed(2)}
-                      </div>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    <span
-                      className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        order.status === "delivered"
-                          ? "bg-green-100 text-green-800"
-                          : order.status === "cancelled"
-                            ? "bg-red-100 text-red-800"
-                            : "bg-yellow-100 text-yellow-800"
-                      }`}
-                    >
-                      {order.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                    {new Date(order.created_at).toLocaleDateString()}
-                  </td>
-                  <td className="px-6 py-4 text-sm">
-                    <OrderActions
-                      orderId={order.id}
-                      currentStatus={order.status}
-                    />
-                  </td>
-                </tr>
-              );
+                  <tr key={order.id}>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
+                      {order.customer_name}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                      {(order.order_items || []).map((item) => (
+                        <div key={item.id}>
+                          {item.products?.name ?? "Produto não encontrado"} (x
+                          {item.quantity})
+                        </div>
+                      ))}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                      {new Intl.NumberFormat("pt-BR", {
+                        style: "currency",
+                        currency: "BRL",
+                      }).format(orderTotal)}
+                      {/* Verificar inconsistência */}
+                      {Math.abs(orderTotal - order.total_amount) > 0.01 && (
+                        <div className="text-xs text-red-400 mt-1">
+                          ⚠️ Divergência: BD = R${" "}
+                          {order.total_amount.toFixed(2)}
+                        </div>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      <span
+                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                          order.status === "delivered"
+                            ? "bg-green-100 text-green-800"
+                            : order.status === "cancelled"
+                              ? "bg-red-100 text-red-800"
+                              : "bg-yellow-100 text-yellow-800"
+                        }`}
+                      >
+                        {order.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                      {new Date(order.created_at).toLocaleDateString()}
+                    </td>
+                    <td className="px-6 py-4 text-sm">
+                      <OrderActions
+                        orderId={order.id}
+                        currentStatus={order.status}
+                      />
+                    </td>
+                  </tr>
+                );
               })}
             </tbody>
           </table>
