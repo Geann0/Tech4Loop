@@ -91,7 +91,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         );
       } else {
         // Adiciona novo item com quantidade 1 e selecionado por padrão
-        newItems = [...prevCart.items, { ...item, quantity: 1, selected: true }];
+        newItems = [
+          ...prevCart.items,
+          { ...item, quantity: 1, selected: true },
+        ];
       }
 
       return {

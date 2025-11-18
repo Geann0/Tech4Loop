@@ -5,12 +5,12 @@
 
 // Feriados nacionais fixos (mês começa em 1)
 const FIXED_HOLIDAYS = [
-  { month: 1, day: 1 },   // Ano Novo
-  { month: 4, day: 21 },  // Tiradentes
-  { month: 5, day: 1 },   // Dia do Trabalho
-  { month: 9, day: 7 },   // Independência
+  { month: 1, day: 1 }, // Ano Novo
+  { month: 4, day: 21 }, // Tiradentes
+  { month: 5, day: 1 }, // Dia do Trabalho
+  { month: 9, day: 7 }, // Independência
   { month: 10, day: 12 }, // Nossa Senhora Aparecida
-  { month: 11, day: 2 },  // Finados
+  { month: 11, day: 2 }, // Finados
   { month: 11, day: 15 }, // Proclamação da República
   { month: 12, day: 25 }, // Natal
 ];
@@ -21,7 +21,7 @@ const FIXED_HOLIDAYS = [
 function isNationalHoliday(date: Date): boolean {
   const month = date.getMonth() + 1;
   const day = date.getDate();
-  
+
   return FIXED_HOLIDAYS.some(
     (holiday) => holiday.month === month && holiday.day === day
   );
@@ -80,13 +80,13 @@ export function isOrderExpired(
   createdAt: Date,
   paymentMethod: string
 ): boolean {
-  if (paymentMethod !== 'boleto' && paymentMethod !== 'bank_slip') {
+  if (paymentMethod !== "boleto" && paymentMethod !== "bank_slip") {
     return false; // Outros métodos não expiram
   }
 
   const now = new Date();
   const expirationDate = calculateBoletoExpirationDate(createdAt);
-  
+
   return now > expirationDate;
 }
 
@@ -94,11 +94,11 @@ export function isOrderExpired(
  * Formata data para exibição brasileira
  */
 export function formatBrazilianDate(date: Date): string {
-  return date.toLocaleDateString('pt-BR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
+  return date.toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 }

@@ -20,7 +20,8 @@ export default function CartPage() {
     hasSelectedItems,
   } = useCart();
 
-  const allSelected = cart.items.length > 0 && cart.items.every((item) => item.selected);
+  const allSelected =
+    cart.items.length > 0 && cart.items.every((item) => item.selected);
 
   const handleSelectAll = () => {
     if (allSelected) {
@@ -82,7 +83,10 @@ export default function CartPage() {
               onChange={handleSelectAll}
               className="w-5 h-5 rounded border-gray-600 bg-gray-800 text-electric-purple focus:ring-2 focus:ring-electric-purple focus:ring-offset-0 cursor-pointer"
             />
-            <label htmlFor="select-all" className="cursor-pointer font-semibold">
+            <label
+              htmlFor="select-all"
+              className="cursor-pointer font-semibold"
+            >
               Selecionar Todos ({cart.items.length})
             </label>
           </div>
@@ -226,7 +230,8 @@ export default function CartPage() {
                   : "bg-gray-700 text-gray-400 cursor-not-allowed pointer-events-none"
               }`}
             >
-              Finalizar Compra ({selectedItems.length} {selectedItems.length === 1 ? "item" : "itens"})
+              Finalizar Compra ({selectedItems.length}{" "}
+              {selectedItems.length === 1 ? "item" : "itens"})
             </Link>
 
             <Link

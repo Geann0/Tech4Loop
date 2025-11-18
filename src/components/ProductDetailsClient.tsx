@@ -9,7 +9,7 @@ import FavoriteButton from "./FavoriteButton";
 import MandatoryLoginModal from "./auth/MandatoryLoginModal";
 import { useCart } from "@/contexts/CartContext";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabaseClient";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { sanitizeHTML } from "@/lib/sanitize";
 
 type ProductWithCategoryAndProfile = Product & {
@@ -29,16 +29,19 @@ export default function ProductDetailsClient({
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showCartPreview, setShowCartPreview] = useState(false);
-  const supabase = createClient();
+  const supabase = createClientComponentClient();
 
   // Verificar autenticação
   useEffect(() => {
-    // Usar getSession() em vez de getUser() para melhor compatibilidade
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    // Verificar sessão inicial
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
       setIsAuthenticated(!!session?.user);
-    });
+    };
+    
+    checkAuth();
 
-    // Também escutar mudanças de autenticação
+    // Escutar mudanças de autenticação
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -46,8 +49,7 @@ export default function ProductDetailsClient({
     });
 
     return () => subscription.unsubscribe();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [supabase.auth]);
 
   const handleAddToCart = () => {
     // 🔒 Exigir login
@@ -278,7 +280,9 @@ export default function ProductDetailsClient({
           />
           <div className="relative bg-gray-900 border border-gray-700 rounded-xl p-6 max-w-md w-full max-h-[80vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-bold">🛒 Seu Carrinho ({cart.itemCount})</h3>
+              <h3 className="text-xl font-bold">
+                🛒 Seu Carrinho ({cart.itemCount})
+              </h3>
               <button
                 onClick={() => setShowCartPreview(false)}
                 className="text-gray-400 hover:text-white transition-colors"
@@ -290,7 +294,10 @@ export default function ProductDetailsClient({
 
             <div className="space-y-3 mb-6">
               {cart.items.slice(-3).map((item) => (
-                <div key={item.product_id} className="flex gap-3 p-3 bg-gray-800/50 rounded-lg">
+                <div
+                  key={item.product_id}
+                  className="flex gap-3 p-3 bg-gray-800/50 rounded-lg"
+                >
                   <div className="relative w-16 h-16 flex-shrink-0">
                     <Image
                       src={item.product_image}
@@ -301,8 +308,12 @@ export default function ProductDetailsClient({
                     />
                   </div>
                   <div className="flex-grow min-w-0">
-                    <p className="font-semibold text-sm truncate">{item.product_name}</p>
-                    <p className="text-xs text-gray-400">{item.quantity}x R$ {item.product_price.toFixed(2)}</p>
+                    <p className="font-semibold text-sm truncate">
+                      {item.product_name}
+                    </p>
+                    <p className="text-xs text-gray-400">
+                      {item.quantity}x R$ {item.product_price.toFixed(2)}
+                    </p>
                   </div>
                 </div>
               ))}
@@ -316,7 +327,9 @@ export default function ProductDetailsClient({
             <div className="border-t border-gray-700 pt-4 mb-4">
               <div className="flex justify-between text-lg font-bold mb-2">
                 <span>Total:</span>
-                <span className="text-neon-blue">R$ {cart.total.toFixed(2)}</span>
+                <span className="text-neon-blue">
+                  R$ {cart.total.toFixed(2)}
+                </span>
               </div>
               <p className="text-xs text-gray-400">
                 💡 No carrinho você pode selecionar quais produtos comprar
