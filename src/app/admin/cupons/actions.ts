@@ -1,6 +1,6 @@
 "use server";
 
-import { createClient } from "@/lib/supabaseServer";
+import { createClient } from "@/lib/supabaseClient";
 import { revalidatePath } from "next/cache";
 
 export async function createCoupon(formData: FormData) {

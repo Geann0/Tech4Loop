@@ -387,7 +387,7 @@ export default function CouponsManager({
           <div className="text-center py-12 text-gray-500">
             <p>Nenhum cupom cadastrado ainda.</p>
             <p className="text-sm mt-2">
-              Clique em "Novo Cupom" para criar o primeiro!
+              Clique em &quot;Novo Cupom&quot; para criar o primeiro!
             </p>
           </div>
         )}

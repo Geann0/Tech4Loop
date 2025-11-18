@@ -1,6 +1,6 @@
 "use server";
 
-import { createClient } from "@/lib/supabaseServer";
+import { createClient } from "@/lib/supabaseClient";
 import { revalidatePath } from "next/cache";
 
 /**
@@ -62,7 +62,7 @@ export async function exportUserData() {
           }
         : null,
       addresses: profile?.addresses || [],
-      orders: orders?.map((o) => ({
+      orders: orders?.map((o: any) => ({
         id: o.id,
         date: o.created_at,
         status: o.status,
@@ -78,11 +78,11 @@ export async function exportUserData() {
           cep: o.customer_cep,
         },
       })),
-      favorites: favorites?.map((f) => ({
+      favorites: favorites?.map((f: any) => ({
         productName: f.products.name,
         addedAt: f.created_at,
       })),
-      reviews: reviews?.map((r) => ({
+      reviews: reviews?.map((r: any) => ({
         productName: r.products.name,
         rating: r.rating,
         comment: r.comment,

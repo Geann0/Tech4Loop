@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabaseServer";
+import { createClient } from "@/lib/supabaseClient";
 import PrivacyManagement from "@/components/profile/PrivacyManagement";
 
 export const metadata: Metadata = {
