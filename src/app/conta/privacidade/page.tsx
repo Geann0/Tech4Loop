@@ -9,12 +9,21 @@ export const metadata: Metadata = {
   description: "Gerencie seus dados pessoais conforme LGPD",
 };
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function PrivacyPage() {
   const supabase = createServerComponentClient({ cookies });
 
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (!session) {
+    redirect("/login");
+  }
+
+  const user = session.user;
 
   if (!user) {
     redirect("/login");

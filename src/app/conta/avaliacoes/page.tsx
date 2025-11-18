@@ -5,16 +5,24 @@ import ProfileSidebar from "@/components/profile/ProfileSidebar";
 import ReviewsList from "@/components/profile/ReviewsList";
 import type { Review } from "./actions";
 
+export const dynamic = "force-dynamic"; // Força renderização dinâmica
+export const revalidate = 0; // Desabilita cache
+
 export default async function AvaliacoesPage() {
   const supabase = createServerComponentClient({ cookies });
 
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    data: { session },
+  } = await supabase.auth.getSession();
 
-  if (!user) {
+  console.log('🔍 [Avaliacoes] Session:', !!session, '- User:', session?.user?.id);
+
+  if (!session) {
+    console.log('❌ [Avaliacoes] No session found, redirecting to /login');
     redirect("/login");
   }
+
+  const user = session.user;
 
   // Buscar perfil para verificar role
   const { data: profile } = await supabase

@@ -4,12 +4,21 @@ import { cookies } from "next/headers";
 import ProfileSidebar from "@/components/profile/ProfileSidebar";
 import FavoritesList from "@/components/profile/FavoritesList";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function FavoritosPage() {
   const supabase = createServerComponentClient({ cookies });
 
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (!session) {
+    redirect("/login");
+  }
+
+  const user = session.user;
 
   if (!user) {
     redirect("/login");
